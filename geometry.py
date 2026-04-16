@@ -1,7 +1,7 @@
 import math
 from typing import Tuple, List
 
-Point = Tuple[float, float]
+Point = Tuple[int, int]
 
 def orientation_test(p: Point, q: Point, r: Point) -> int:
     """Returns the orientation of the ordered triplet (p, q, r).
