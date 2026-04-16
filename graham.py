@@ -8,10 +8,11 @@ def graham_scan(points: List[Point]) -> List[Point]:
     if len(points) < 3:
         return points
     
-    points.sort(key=lambda p: (p[0], p[1]))
+    pts = points[:]
+    pts.sort(key=lambda p: (p[0], p[1]))
 
-    upper_chain = compute_chain(points)
-    lower_chain = compute_chain(points[::-1])
+    upper_chain = compute_chain(pts)
+    lower_chain = compute_chain(pts[::-1])
 
     # remove the last point of each chain to avoid duplication of the start/end points
     upper_chain.pop()
