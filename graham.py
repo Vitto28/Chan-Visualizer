@@ -38,5 +38,4 @@ def compute_chain(points: List[Point]) -> List[Point]:
                 pj = stack[-1]
                 pj1 = stack[-2]
         stack.append(p)
-        print(f"Current stack: {stack}")
     return stack
