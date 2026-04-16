@@ -5,24 +5,38 @@ def graham_scan(points: List[Point]) -> List[Point]:
     if dup_x_coord_set(points):
         raise ValueError("Input points must have unique x-coordinates.")
     
-    n = len(points)
-    if n < 3:
+    if len(points) < 3:
         return points
     
-    # 1. Sort points by x-coordinate
     points.sort(key=lambda p: (p[0], p[1]))
 
-    # 2. Push p1 and p2 onto the stack
-    stack = []
-    stack.append(points[0])
-    stack.append(points[1])
+    upper_chain = compute_chain(points)
+    lower_chain = compute_chain(points[::-1])
 
+    # remove the last point of each chain to avoid duplication of the start/end points
+    upper_chain.pop()
+    lower_chain.pop()
+
+    return upper_chain + lower_chain
+
+
+def compute_chain(points: List[Point]) -> List[Point]:
+    """Computes either the upper or lower chain of the convex hull, depending on the order of the input points."""
+    n = len(points)
+    # create a local copy of the points to avoid modifying the original list
+    pts = points[:]
+    stack = []
+    stack.append(pts[0])
+    stack.append(pts[1])
     for i in range(2, n):
-        p = points[i]
+        p = pts[i]
         pj = stack[-1]
         pj1 = stack[-2]
         while len(stack) > 1 and orientation_test(p, pj, pj1) <= 0:
             stack.pop()
+            if len(stack) > 1:
+                pj = stack[-1]
+                pj1 = stack[-2]
         stack.append(p)
-    
+        print(f"Current stack: {stack}")
     return stack
