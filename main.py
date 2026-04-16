@@ -1,17 +1,15 @@
 import random
 import matplotlib.pyplot as plt
 
+from geometry import dup_x_coord_set
+
 from graham import graham_scan
 
 
 def main():
-    seed = 42
-    n = 20
-    x_max = 400
-    y_max = 300
-    # rng = random.Random()
-    rng = random.Random(seed)
-    pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
+    rng = random.Random()
+    # rng = random.Random(seed)
+    pts = generate_random_points()
     print(f"Generated {len(pts)} random points.")
 
     fig = plt.figure(figsize=(10, 8))
@@ -25,7 +23,7 @@ def main():
     plt.show()
 
     hull = graham_scan(pts)
-    print(f"Convex Hull has {len(hull)} points: {hull}")
+    # print(f"Convex Hull has {len(hull)} points: {hull}")
 
     hull_xs, hull_ys = zip(*hull)
     plt.figure(figsize=(10, 8))
@@ -38,6 +36,13 @@ def main():
     plt.grid()
     plt.show()
 
+
+def generate_random_points(n=20, x_max=400, y_max=300, seed=None):
+    rng = random.Random(seed)
+    pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
+    while dup_x_coord_set(pts):
+        pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
+    return pts
 
 if __name__ == "__main__":
     main()
