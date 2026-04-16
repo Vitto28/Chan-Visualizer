@@ -48,3 +48,21 @@ def left_tangent_point(hull: List[Point], q: Point) -> int:
             # p_next lies on the wrong side
             low = mid + 1
     return low
+
+# === Degeneracy checks ===
+def are_collinear(p: Point, q: Point, r: Point) -> bool:
+    """Check if points p, q, r are collinear."""
+    return orientation_test(p, q, r) == 0
+
+def dup_x_coord(p: Point, q: Point) -> bool:
+    """Check if points p and q have the same x-coordinate."""
+    return p[0] == q[0]
+
+def dup_x_coord_set(points: List[Point]) -> bool:
+    """Check if there are at least two points with the same x-coordinate."""
+    seen_x = set()
+    for p in points:
+        if p[0] in seen_x:
+            return True
+        seen_x.add(p[0])
+    return False
