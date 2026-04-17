@@ -24,14 +24,11 @@ def jarvis_march(points: List[Point]) -> List[Point]:
         for p in points:
             if p == pivot or p == pivot_pred:
                 continue
-            if vi is None:
-                vi = p
-                min_angle = angle(pivot_pred, pivot, p)
-                continue
+            # if vi is None:
+            #     vi = p
+            #     min_angle = angle(pivot_pred, pivot, p)
+            #     continue
             _angle = angle(pivot_pred, pivot, p)
-            if _angle < 0:
-                # something went wrong with the angle calculation, it should never be negative
-                raise ValueError(f"Angle should never be negative, but got { _angle } for points {pivot_pred}, {pivot}, {p}. This likely indicates a bug in the angle function.")
             if _angle < min_angle:
                 min_angle = _angle
                 vi = p

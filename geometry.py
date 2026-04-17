@@ -71,7 +71,7 @@ def left_tangent_point(hull: List[Point], q: Point) -> int:
         else:
             # p_next lies on the wrong side
             low = mid + 1
-    return low
+    return low % n
 
 # === Degeneracy checks ===
 def are_collinear(p: Point, q: Point, r: Point) -> bool:
