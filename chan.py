@@ -70,25 +70,25 @@ def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
                 min_angle = _angle
                 vi = p
 
-        # # plot the mini-hulls, tangent points, and current hull
-        # import matplotlib.pyplot as plt
-        # plt.figure(figsize=(10, 8))
-        # xs, ys = zip(*points)
-        # plt.scatter(xs, ys, color='blue', label='Random Points')
-        # for mh in mini_hulls:
-        #     mh_xs, mh_ys = zip(*mh)
-        #     plt.plot(mh_xs + (mh_xs[0],), mh_ys + (mh_ys[0],), color='orange', label='Mini Hull')
-        # tangent_xs, tangent_ys = zip(*tangent_points)
-        # plt.scatter(tangent_xs, tangent_ys, color='green', label='Tangent Points', s=100)
-        # hull_xs, hull_ys = zip(*final_hull)
-        # plt.scatter([pivot[0]], [pivot[1]], color='red', label='Current Pivot')
-        # plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Current Hull')
-        # plt.title(f'Chan\'s Algorithm with h* = {h}')
-        # plt.xlabel('X-axis')
-        # plt.ylabel('Y-axis')
-        # plt.legend()
-        # plt.grid()
-        # plt.show()
+        # plot the mini-hulls, tangent points, and current hull
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 8))
+        xs, ys = zip(*points)
+        plt.scatter(xs, ys, color='blue', label='Random Points')
+        for mh in mini_hulls:
+            mh_xs, mh_ys = zip(*mh)
+            plt.plot(mh_xs + (mh_xs[0],), mh_ys + (mh_ys[0],), color='orange', label='Mini Hull')
+        tangent_xs, tangent_ys = zip(*tangent_points)
+        plt.scatter(tangent_xs, tangent_ys, color='green', label='Tangent Points', s=100)
+        hull_xs, hull_ys = zip(*final_hull)
+        plt.scatter([pivot[0]], [pivot[1]], color='red', label='Current Pivot')
+        plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Current Hull')
+        plt.title(f'Chan\'s Algorithm with h* = {h}')
+        plt.xlabel('X-axis')
+        plt.ylabel('Y-axis')
+        plt.legend()
+        plt.grid()
+        plt.show()
 
         assert vi is not None
         if vi == v1: # we've wrapped around to the start

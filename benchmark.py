@@ -89,7 +89,8 @@ def run_benchmark_config(config_func, sizes, trials):
 
     # TODO: should be a toggable option?
     print(f"\nResults for configuration: {config_name}")
-    print(f"{'Size':>10}", end="")
+    print(f"{'Input size':>10}", end="")
+    # print(f"{'Hull size':>20}", end="")
     for algo_name in algos.keys():
         print(f"{algo_name:>20}", end="")
     print(f"{'Best':>20}", end="")
@@ -141,7 +142,8 @@ def run_benchmark(sizes, trials):
 # === Main execution ===
 
 if __name__ == "__main__":
-    sizes = [10, 20, 50, 100, 200, 500, 1000]
+    # sizes = [10, 20, 50, 100, 200, 500, 1000]
+    sizes = [10000]
     # TODO: aside from random points, also try other distributions (e.g. points on a circle, points in a grid, etc.)
     # since jarvis depends on the number of hull points, so it can potentially perform much better/worse on certain distributions (e.g. points on a circle, where all points are on the hull)
     trials = 10 # number of trials to average over for each size
@@ -151,7 +153,8 @@ if __name__ == "__main__":
 
     # print a summary of the results as a nice table
     print("\nBenchmark Results:")
-    print(f"{'Size':>10}", end="")
+    print(f"{'Input size':>10}", end="")
+    # print(f"{'Hull size':>20}", end="")
     for algo_name in algos.keys():
         print(f"{algo_name:>20}", end="")
     print(f"{'Best':>20}", end="")
