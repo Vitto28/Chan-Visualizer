@@ -19,7 +19,7 @@ def chans_algo(points: List[Point]) -> List[Point]:
     success = False
     while not success:
         h_star = min(h_star**2, n) # TODO: try other growth rates for h_star
-        print(f"Trying with h* = {h_star}...")
+        # print(f"Trying with h* = {h_star}...")
         success, hull = conditional_hull(pts, h_star)
     return hull
 
@@ -38,7 +38,7 @@ def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
 
     # mini hack: if k = 1, then we can just return the single mini-hull as the final hull (since it must be the case that h >= |hull|, so the single mini-hull must contain the entire hull)
     if k == 1:
-        print("little hack")
+        # print("little hack")
         return True, mini_hulls[0]
     
     # identify a point guaranteed to be on the hull (smallest y-coord, use x-coord to break ties)
@@ -57,7 +57,7 @@ def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
             # print index
             # print(f"Left tangent index for mini-hull {mh} is {tangent_index}")
             tangent_points.append(mh[tangent_index])
-        print(f"Tangent points: {tangent_points}")
+        # print(f"Tangent points: {tangent_points}")
 
         vi = None # current best candidate for the next hull point
         min_angle = float('inf')
@@ -92,7 +92,8 @@ def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
 
         assert vi is not None
         if vi == v1: # we've wrapped around to the start
-            print("Its a wrap folks")
+            # TODO: see why this fails
+            # print("Its a wrap folks")
             return True, final_hull
         final_hull.append(vi)
         pivot_pred, pivot = final_hull[-2], final_hull[-1]

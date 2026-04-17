@@ -2,8 +2,8 @@ from geometry import Point, orientation_test, dup_x_coord_set
 from typing import List
 
 def graham_scan(points: List[Point]) -> List[Point]:
-    if dup_x_coord_set(points):
-        raise ValueError("Input points must have unique x-coordinates.")
+    # if dup_x_coord_set(points):
+        # raise ValueError("Input points must have unique x-coordinates.")
     
     if len(points) < 3:
         return points

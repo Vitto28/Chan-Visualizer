@@ -1,19 +1,24 @@
-import random
+# import random
+import numpy as np
 import matplotlib.pyplot as plt
 
 from geometry import general_position
+
+from benchmark import random_small_hull
 
 from graham import graham_scan
 from jarvis import jarvis_march
 from chan import chans_algo
 
 def main():
-    rng = random.Random()
-    # rng = random.Random(seed)
-    pts = generate_random_points()
+    n = 1000
+    x_max = 10000
+    y_max = 10000
+    # pts = generate_random_points(n, x_max, y_max)
+    pts = random_small_hull(n, x_max, y_max)
     print(f"Generated {len(pts)} random points.")
 
-    fig = plt.figure(figsize=(10, 8))
+    # fig = plt.figure(figsize=(10, 8))
     xs, ys = zip(*pts)
     # plt.scatter(xs, ys, color='blue', label='Random Points')
     # plt.title('Random Points')
@@ -38,15 +43,6 @@ def main():
     plt.legend()
     plt.grid()
     plt.show()
-
-
-def generate_random_points(n=20, x_max=400, y_max=300, seed=None):
-    rng = random.Random(seed)
-    pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
-    # while dup_x_coord_set(pts):
-    while not general_position(pts):
-        pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
-    return pts
 
 if __name__ == "__main__":
     main()
