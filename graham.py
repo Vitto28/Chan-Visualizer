@@ -1,24 +1,70 @@
 from geometry import Point, orientation_test, dup_x_coord_set
-from typing import List
+from typing import List, Dict, Any, Tuple
 
-def graham_scan(points: List[Point]) -> List[Point]:
+steps: List[Dict[str, Any]] = []
+# PHASES = ...
+record_steps = False
+
+def record_pop(_stack: List[Point], popped: Point, p: Point):
+    if not record_steps:
+        return
+    steps.append({
+        "phase": "pop",
+        "popped": popped,
+        "stack": _stack[:],
+        "current": p,
+        "description": f"Popped point {popped} from stack"
+    })
+    return
+
+def record_push(_stack: List[Point], pushed: Point, p: Point):
+    if not record_steps:
+        return
+    steps.append({
+        "phase": "push",
+        "pushed": pushed,
+        "stack": _stack[:],
+        "current": p,
+        "description": f"Pushed point {pushed} onto stack (stack size is now {len(_stack)})"
+    })
+    return
+
+def record_finished_chain(_stack: List[Point], chain_type: str):
+    if not record_steps:
+        return
+    steps.append({
+        "phase": "finished_chain",
+        "stack": _stack[:],
+        "description": f"Computed {chain_type} chain"
+    })
+    return
+
+
+# def graham_scan(points: List[Point], _record_steps: bool = False) -> List[Point]:
+def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[Point], List[Dict[str, Any]]]:
     # if dup_x_coord_set(points):
         # raise ValueError("Input points must have unique x-coordinates.")
-    
+
+    record_steps = _record_steps
+
     if len(points) < 3:
-        return points
+        return points, steps
     
     pts = points[:]
     pts.sort(key=lambda p: (p[0], p[1]))
 
     upper_chain = compute_chain(pts)
+    record_finished_chain(upper_chain, "upper")
     lower_chain = compute_chain(pts[::-1])
+    record_finished_chain(lower_chain, "lower")
 
     # remove the last point of each chain to avoid duplication of the start/end points
     upper_chain.pop()
     lower_chain.pop()
 
-    return upper_chain + lower_chain
+    hull = upper_chain + lower_chain
+
+    return hull, steps
 
 
 def compute_chain(points: List[Point]) -> List[Point]:
@@ -35,8 +81,10 @@ def compute_chain(points: List[Point]) -> List[Point]:
         pj1 = stack[-2]
         while len(stack) > 1 and orientation_test(p, pj, pj1) <= 0:
             stack.pop()
+            record_pop(stack, pj, p)
             if len(stack) > 1:
                 pj = stack[-1]
                 pj1 = stack[-2]
         stack.append(p)
+        record_push(stack, p, p)
     return stack
