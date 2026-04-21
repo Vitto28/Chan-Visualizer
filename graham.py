@@ -45,6 +45,7 @@ def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[
     # if dup_x_coord_set(points):
         # raise ValueError("Input points must have unique x-coordinates.")
 
+    global record_steps
     record_steps = _record_steps
 
     if len(points) < 3:
@@ -63,6 +64,9 @@ def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[
     lower_chain.pop()
 
     hull = upper_chain + lower_chain
+
+    # print the number of steps recorded
+    print(f"Graham's Scan recorded {len(steps)} steps.")
 
     return hull, steps
 
