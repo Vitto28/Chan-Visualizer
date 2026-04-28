@@ -1,16 +1,23 @@
 from geometry import Point, angle, left_tangent_point
-from typing import List
+from typing import List, Dict, Any, Tuple
 from math import ceil
 
 
 
 from graham import graham_scan
 
+steps: List[Dict[str, Any]] = []
+record_steps = False
 
-def chans_algo(points: List[Point]) -> List[Point]:
+def graham_aux(points: List[Point]) -> List[Point]:
+    """Helper function that computes the convex hull of a subset of points using Graham's scan. This is used as a subroutine in Chan's algorithm. It only returns the hull points without recording steps, since we don't need to visualize the mini-hulls."""
+    return graham_scan(points)[0]
+
+
+def chans_algo(points: List[Point]) -> Tuple[List[Point], List[Dict[str, Any]]]:
 
     if len(points) < 3:
-        return points
+        return points, steps
 
     pts = points[:]
     n = len(pts)
@@ -21,18 +28,19 @@ def chans_algo(points: List[Point]) -> List[Point]:
         h_star = min(h_star**2, n) # TODO: try other growth rates for h_star
         # print(f"Trying with h* = {h_star}...")
         success, hull = conditional_hull(pts, h_star)
-    return hull
+    return hull, steps
 
 
-def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
+# def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
+def conditional_hull(points: List[Point], h: int) -> Tuple[bool, List[Point]]:
     k = ceil(len(points) // h) # number of mini-hulls
     # compute the mini-hulls using GS
     mini_hulls = []
     pts = points[:]
     for i in range(k):
-        mini_hulls.append(graham_scan(pts[i*h:(i+1)*h]))
+        mini_hulls.append(graham_aux(pts[i*h:(i+1)*h]))
     if k * h < len(points):
-        mini_hulls.append(graham_scan(pts[k*h:])) # handle the last mini-hull if n is not a multiple of h
+        mini_hulls.append(graham_aux(pts[k*h:])) # handle the last mini-hull if n is not a multiple of h
 
     final_hull = []
 
@@ -71,24 +79,24 @@ def conditional_hull(points: List[Point], h: int) -> (bool, List[Point]):
                 vi = p
 
         # plot the mini-hulls, tangent points, and current hull
-        import matplotlib.pyplot as plt
-        plt.figure(figsize=(10, 8))
-        xs, ys = zip(*points)
-        plt.scatter(xs, ys, color='blue', label='Random Points')
-        for mh in mini_hulls:
-            mh_xs, mh_ys = zip(*mh)
-            plt.plot(mh_xs + (mh_xs[0],), mh_ys + (mh_ys[0],), color='orange', label='Mini Hull')
-        tangent_xs, tangent_ys = zip(*tangent_points)
-        plt.scatter(tangent_xs, tangent_ys, color='green', label='Tangent Points', s=100)
-        hull_xs, hull_ys = zip(*final_hull)
-        plt.scatter([pivot[0]], [pivot[1]], color='red', label='Current Pivot')
-        plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Current Hull')
-        plt.title(f'Chan\'s Algorithm with h* = {h}')
-        plt.xlabel('X-axis')
-        plt.ylabel('Y-axis')
-        plt.legend()
-        plt.grid()
-        plt.show()
+        # import matplotlib.pyplot as plt
+        # plt.figure(figsize=(10, 8))
+        # xs, ys = zip(*points)
+        # plt.scatter(xs, ys, color='blue', label='Random Points')
+        # for mh in mini_hulls:
+        #     mh_xs, mh_ys = zip(*mh)
+        #     plt.plot(mh_xs + (mh_xs[0],), mh_ys + (mh_ys[0],), color='orange', label='Mini Hull')
+        # tangent_xs, tangent_ys = zip(*tangent_points)
+        # plt.scatter(tangent_xs, tangent_ys, color='green', label='Tangent Points', s=100)
+        # hull_xs, hull_ys = zip(*final_hull)
+        # plt.scatter([pivot[0]], [pivot[1]], color='red', label='Current Pivot')
+        # plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Current Hull')
+        # plt.title(f'Chan\'s Algorithm with h* = {h}')
+        # plt.xlabel('X-axis')
+        # plt.ylabel('Y-axis')
+        # plt.legend()
+        # plt.grid()
+        # plt.show()
 
         assert vi is not None
         if vi == v1: # we've wrapped around to the start

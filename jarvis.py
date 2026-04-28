@@ -1,13 +1,15 @@
 from geometry import Point, angle
-from typing import List
+from typing import List, Dict, Any, Tuple
 
+steps: List[Dict[str, Any]] = []
+record_steps = False
 
-def jarvis_march(points: List[Point]) -> List[Point]:
+def jarvis_march(points: List[Point]) -> Tuple[List[Point], List[Dict[str, Any]]]:
     # if dup_x_coord_set(points):
     #     raise ValueError("Input points must have unique x-coordinates.")
     
     if len(points) < 3:
-        return points
+        return points, steps
     
     hull = []
     
@@ -39,4 +41,4 @@ def jarvis_march(points: List[Point]) -> List[Point]:
         hull.append(vi)
         pivot_pred, pivot = hull[-2], hull[-1]
 
-    return hull
+    return hull, steps

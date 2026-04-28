@@ -2,7 +2,6 @@ from geometry import Point, orientation_test, dup_x_coord_set
 from typing import List, Dict, Any, Tuple
 
 steps: List[Dict[str, Any]] = []
-# PHASES = ...
 record_steps = False
 
 def record_pop(_stack: List[Point], popped: Point, p: Point):
@@ -73,7 +72,7 @@ def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[
     })
 
     # print the number of steps recorded
-    print(f"Graham's Scan recorded {len(steps)} steps.")
+    # print(f"Graham's Scan recorded {len(steps)} steps.")
 
     return hull, steps
 

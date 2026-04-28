@@ -32,28 +32,29 @@ def main():
     # plt.show()
 
     # run the three algorithms on the same set of points and verify that they all produce the same hull (up to cyclic shifts and reversals)
-    # algos = {
-    #     "Graham's Scan": graham_scan(pts[:]),
-    #     "Jarvis March": jarvis_march(pts[:]),
-    #     "Chan's Algorithm": chans_algo(pts[:])
-    # }
+    # take only the hull points, ignore the recorded steps for now
+    algos = {
+        "Graham's Scan": graham_scan(pts[:]),
+        "Jarvis March": jarvis_march(pts[:]),
+        "Chan's Algorithm": chans_algo(pts[:])
+    }
 
-    gs_hull, gs_steps = graham_scan(pts[:], _record_steps=True)
+    # gs_hull, gs_steps = graham_scan(pts[:], _record_steps=True)
     # print len of steps
-    print(f"Graham's Scan produced a hull with {len(gs_hull)} points and recorded {len(gs_steps)} steps.")
-    visualize(pts, gs_steps, "graham_scan")
+    # print(f"Graham's Scan produced a hull with {len(gs_hull)} points and recorded {len(gs_steps)} steps.")
+    # visualize(pts, gs_steps, "graham_scan")
 
     # plot the final hull as a sanity check
-    hull_xs, hull_ys = zip(*gs_hull)
-    plt.figure(figsize=(10, 8))
-    plt.scatter(xs, ys, color='blue', label='Random Points')
-    plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
-    plt.title(f"Graham's Scan Final Hull (size: {len(gs_hull)})")
-    plt.xlabel('X-axis')
-    plt.ylabel('Y-axis')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # hull_xs, hull_ys = zip(*gs_hull)
+    # plt.figure(figsize=(10, 8))
+    # plt.scatter(xs, ys, color='blue', label='Random Points')
+    # plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
+    # plt.title(f"Graham's Scan Final Hull (size: {len(gs_hull)})")
+    # plt.xlabel('X-axis')
+    # plt.ylabel('Y-axis')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
 
 
     # assert the three algorithms produced the same hull (up to cyclic shifts and reversals)
@@ -69,18 +70,21 @@ def main():
     # print(f"Convex Hull has {len(hull)} points: {hull}")
 
     # plot the hulls produced by each of the three algorithms, side by side for easy comparison
-    # fig, axs = plt.subplots(1, 3, figsize=(18, 6))
-    # for ax, (algo_name, hull) in zip(axs, algos.items()):
-    #     ax.scatter(xs, ys, color='blue', label='Random Points')
-    #     hull_xs, hull_ys = zip(*hull)
-    #     ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
-    #     ax.set_title(f"{algo_name} (Hull size: {len(hull)})")
-    #     ax.set_xlabel('X-axis')
-    #     ax.set_ylabel('Y-axis')
-    #     ax.legend()
-    #     ax.grid()
-    # plt.tight_layout()
-    # plt.show()
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+    for ax, (algo_name, algo_output) in zip(axs, algos.items()):
+        print(f"Visualizing {algo_name} output...")
+        hull, _ = algo_output
+        # print(f"{algo_name} produced a hull with {len(hull)} points.")
+        ax.scatter(xs, ys, color='blue', label='Random Points')
+        hull_xs, hull_ys = zip(*hull)
+        ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
+        ax.set_title(f"{algo_name} (Hull size: {len(hull)})")
+        ax.set_xlabel('X-axis')
+        ax.set_ylabel('Y-axis')
+        ax.legend()
+        ax.grid()
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()
