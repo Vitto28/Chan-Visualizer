@@ -29,9 +29,10 @@ def setup_ax(ax, points: List[Point], title: str = ""):
     ax.tick_params(colors=COLORS["text"], labelsize=7)
 
 
-def draw_points(ax, pts, color=None, s=35, zorder=3, alpha=1.0, marker="o"):
+def draw_points(ax, pts: List[Point], color=None, s=35, zorder=3, alpha=1.0, marker="o"):
     padding = 0.1
     xs, ys = zip(*pts)
+
     xmin, xmax = min(xs), max(xs)
     ymin, ymax = min(ys), max(ys)
     xr = max(xmax - xmin, 1)
@@ -43,6 +44,22 @@ def draw_points(ax, pts, color=None, s=35, zorder=3, alpha=1.0, marker="o"):
     for spine in ax.spines.values():
         spine.set_color(COLORS["grid"])
     ax.grid(color=COLORS["grid"], lw=0.5, alpha=0.5)
+    ax.scatter(xs, ys, color=color, s=s, zorder=zorder, alpha=alpha, marker=marker)
+    
+def draw_hull(ax, hull: List[Point], color=None, lw=2, zorder=4):
+    if len(hull) == 0:
+        return
+    hull_xs, hull_ys = zip(*hull)
+    ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color=color, lw=lw, zorder=zorder)
+
+def draw_line(ax, p1: Point, p2: Point, color=None, lw=1, zorder=4):
+    ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color=color, lw=lw, zorder=zorder)
+
+# draws lines connecting the given points in order, without closing the curve
+# uses draw_line
+def draw_polygonal_curve(ax, points: List[Point], color=None, lw=1, zorder=4):
+    for i in range(len(points) - 1):
+        draw_line(ax, points[i], points[i+1], color=color, lw=lw, zorder=zorder)
     
 
 # Graham scan
@@ -63,6 +80,14 @@ def render_graham_step(ax, step: Dict[str, Any]):
         draw_points(ax, [current], color=COLORS["removed_point"], s=100, zorder=5)
     elif phase == "finished_chain":
         draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+    elif phase == "finished":
+        # draw_points(ax, hull, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_hull(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
+        return
+    else:
+        raise ValueError(f"Unknown phase {phase} in step: {step}")
+        
+    draw_polygonal_curve(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
 
 # Dispatch
 RENDERERS = {
@@ -108,15 +133,24 @@ def show_steps_auto(steps: List[Dict[str, Any]], points: List[Point], algorithm:
     plt.ion()
     render_fn = RENDERERS[algorithm]
     assert render_fn is not None, f"No renderer defined for algorithm {algorithm}"
+    assert len(points) > 0, "No input points to visualize"
 
     global input_points
     input_points.clear()
     input_points.extend(points)
 
+    # draw initial points
+    draw_points(ax, points, color=COLORS["point"], s=35, zorder=3)
+    plt.pause(delay)
+
+    # print points for debugging
+    print(f"Input points: {points}")
+
     for i, step in enumerate(steps):
         print(f"Rendering step {i+1}/{len(steps)}")
         ax.cla()
         # render_fn(ax, step, points)
+        draw_points(ax, points, color=COLORS["point"], s=35, zorder=3)
         render_fn(ax, step)
         setup_ax(ax, points, title=f"Phase: {step['phase']}  ({i+1}/{len(steps)})")
         desc = step.get("description", "")
@@ -129,4 +163,4 @@ def show_steps_auto(steps: List[Dict[str, Any]], points: List[Point], algorithm:
 # visualize function
 def visualize(points: List[Point], steps: List[Dict[str, Any]], algorithm: str, title: str = ""):
     # TODO: add option for manual step-through with buttons
-    show_steps_auto(steps, points, algorithm, title=title)
+    show_steps_auto(steps, points, algorithm, title=title, delay=0.1)

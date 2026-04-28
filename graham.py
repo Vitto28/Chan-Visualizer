@@ -65,6 +65,13 @@ def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[
 
     hull = upper_chain + lower_chain
 
+    # record finished step
+    steps.append({
+        "phase": "finished",
+        "stack": hull[:],
+        "description": f"Finished computing convex hull with {len(hull)} points"
+    })
+
     # print the number of steps recorded
     print(f"Graham's Scan recorded {len(steps)} steps.")
 

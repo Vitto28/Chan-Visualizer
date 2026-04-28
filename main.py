@@ -43,6 +43,17 @@ def main():
     print(f"Graham's Scan produced a hull with {len(gs_hull)} points and recorded {len(gs_steps)} steps.")
     visualize(pts, gs_steps, "graham_scan")
 
+    # plot the final hull as a sanity check
+    hull_xs, hull_ys = zip(*gs_hull)
+    plt.figure(figsize=(10, 8))
+    plt.scatter(xs, ys, color='blue', label='Random Points')
+    plt.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
+    plt.title(f"Graham's Scan Final Hull (size: {len(gs_hull)})")
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 
     # assert the three algorithms produced the same hull (up to cyclic shifts and reversals)
