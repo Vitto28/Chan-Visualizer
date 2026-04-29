@@ -241,12 +241,19 @@ class Visualizer:
 
     def _render(self):
         step = self.steps[self.idx]
+        self.ax.cla() # clear the axes before redrawing
         render_fn = RENDERERS[self.algorithm]
-        # render_fn(self.ax, step, self.points)
+
+        # draw all the points first (some renderers may choose to redraw them, but this ensures the points are always in the background)
+        draw_points(self.ax, self.points, color=COLORS["point"], s=35, zorder=3)
+
         render_fn(self.ax, step)
-        setup_ax(self.ax, self.points)
-        self.desc_text.set_text(step["description"])
-        self.counter_text.set_text(f"Step {self.idx + 1} of {len(self.steps)}")
+        setup_ax(self.ax, self.points,
+                  title=f"Phase: {step['phase']}")
+        self.desc_text.set_text(step.get("description", ""))
+        self.counter_text.set_text(
+            f"Step {self.idx + 1} / {len(self.steps)}"
+        )
         self.fig.canvas.draw_idle()
 
     def show(self):
