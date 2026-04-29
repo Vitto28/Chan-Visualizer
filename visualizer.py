@@ -8,12 +8,17 @@ COLORS = {
     "current_point": "#ff7f0e",
     "hull_point": "#2ca02c",
     "hull_edge": "#2ca02c",
+    "potential_hull_edge": "#ff7f0e",
+    "potential_hull_vertex": "#ff7f0e",
+    "best_candidate_edge": "#1f77b4",
     "removed_point": "#d62728",
     "text": "#000000",
     "grid": "#cccccc"
 }
 
 input_points: List[Point] = []
+
+# === Drawing utilities ===
 
 def setup_ax(ax, points: List[Point], title: str = ""):
     xs, ys = zip(*points)
@@ -61,10 +66,10 @@ def draw_polygonal_curve(ax, points: List[Point], color=None, lw=1, zorder=4):
     for i in range(len(points) - 1):
         draw_line(ax, points[i], points[i+1], color=color, lw=lw, zorder=zorder)
     
+# === Algorithm-specific renderers ===
 
 # Graham scan
 def render_graham_step(ax, step: Dict[str, Any]):
-    print("HERE")
     phase = step["phase"]
     stack = step["stack"]
     # current = step["current"]
@@ -89,10 +94,59 @@ def render_graham_step(ax, step: Dict[str, Any]):
         
     draw_polygonal_curve(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
 
+
+def render_jarvis_step(ax, step: Dict[str, Any]):
+    phase = step["phase"]
+    stack = step["stack"]
+
+    setup_ax(ax, input_points)
+    # always draw the current hull points
+    draw_polygonal_curve(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=4)
+
+    if phase == "start":
+        current = step["current"]
+        sentinel = step["sentinel"]
+        draw_points(ax, [current], color=COLORS["current_point"], s=100, zorder=5)
+        draw_points(ax, [sentinel], color=COLORS["removed_point"], s=100, zorder=5)
+    elif phase == "candidate_test":
+        pivot = step["pivot"]
+        pivot_pred = step["pivot_pred"]
+        candidate = step["candidate"]
+        current_best = step.get("current_best", None)
+
+        # draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=5)
+        draw_points(ax, [candidate], color=COLORS["potential_hull_vertex"], s=100, zorder=5)
+        if current_best is not None:
+            draw_points(ax, [current_best], color=COLORS["hull_point"], s=100, zorder=6)
+        draw_line(ax, pivot_pred, pivot, color=COLORS["hull_edge"], lw=2, zorder=4)
+        draw_line(ax, pivot, candidate, color=COLORS["potential_hull_edge"], lw=2, zorder=5)
+        if current_best is not None:
+            draw_line(ax, pivot, current_best, color=COLORS["hull_edge"], lw=2, zorder=6)
+    elif phase == "new_best":
+        pivot = step["pivot"]
+        pivot_pred = step["pivot_pred"]
+        new_best = step["new_best"]
+
+        # draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=5)
+        draw_points(ax, [new_best], color=COLORS["hull_point"], s=100, zorder=6)
+        draw_line(ax, pivot_pred, pivot, color=COLORS["hull_edge"], lw=2, zorder=4)
+        draw_line(ax, pivot, new_best, color=COLORS["hull_edge"], lw=2, zorder=6)
+    elif phase == "current_hull":
+        # draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_points(ax, [stack[-1]], color=COLORS["current_point"], s=100, zorder=5)
+        draw_polygonal_curve(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
+    elif phase == "finished":
+        # draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_hull(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
+    else:
+        raise ValueError(f"Unknown phase {phase} in step: {step}")
+
 # Dispatch
 RENDERERS = {
     "graham_scan": render_graham_step,
-    "jarvis_march": None, # TODO
+    "jarvis_march": render_jarvis_step,
     "chan_algorithm": None # TODO
 }
 

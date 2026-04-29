@@ -22,7 +22,7 @@ def main():
     print(f"Generated {len(pts)} random points.")
 
     # fig = plt.figure(figsize=(10, 8))
-    xs, ys = zip(*pts)
+    # xs, ys = zip(*pts)
     # plt.scatter(xs, ys, color='blue', label='Random Points')
     # plt.title('Random Points')
     # plt.xlabel('X-axis')
@@ -33,16 +33,18 @@ def main():
 
     # run the three algorithms on the same set of points and verify that they all produce the same hull (up to cyclic shifts and reversals)
     # take only the hull points, ignore the recorded steps for now
-    algos = {
-        "Graham's Scan": graham_scan(pts[:]),
-        "Jarvis March": jarvis_march(pts[:]),
-        "Chan's Algorithm": chans_algo(pts[:])
-    }
+    # algos = {
+    #     "Graham's Scan": graham_scan(pts[:]),
+    #     "Jarvis March": jarvis_march(pts[:]),
+    #     "Chan's Algorithm": chans_algo(pts[:])
+    # }
 
     # gs_hull, gs_steps = graham_scan(pts[:], _record_steps=True)
+    jm_hull, jm_steps = jarvis_march(pts[:], _record_steps=True)
     # print len of steps
     # print(f"Graham's Scan produced a hull with {len(gs_hull)} points and recorded {len(gs_steps)} steps.")
     # visualize(pts, gs_steps, "graham_scan")
+    visualize(pts, jm_steps, "jarvis_march")
 
     # plot the final hull as a sanity check
     # hull_xs, hull_ys = zip(*gs_hull)
@@ -70,21 +72,21 @@ def main():
     # print(f"Convex Hull has {len(hull)} points: {hull}")
 
     # plot the hulls produced by each of the three algorithms, side by side for easy comparison
-    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
-    for ax, (algo_name, algo_output) in zip(axs, algos.items()):
-        print(f"Visualizing {algo_name} output...")
-        hull, _ = algo_output
-        # print(f"{algo_name} produced a hull with {len(hull)} points.")
-        ax.scatter(xs, ys, color='blue', label='Random Points')
-        hull_xs, hull_ys = zip(*hull)
-        ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
-        ax.set_title(f"{algo_name} (Hull size: {len(hull)})")
-        ax.set_xlabel('X-axis')
-        ax.set_ylabel('Y-axis')
-        ax.legend()
-        ax.grid()
-    plt.tight_layout()
-    plt.show()
+    # fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+    # for ax, (algo_name, algo_output) in zip(axs, algos.items()):
+    #     print(f"Visualizing {algo_name} output...")
+    #     hull, _ = algo_output
+    #     # print(f"{algo_name} produced a hull with {len(hull)} points.")
+    #     ax.scatter(xs, ys, color='blue', label='Random Points')
+    #     hull_xs, hull_ys = zip(*hull)
+    #     ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color='red', label='Convex Hull')
+    #     ax.set_title(f"{algo_name} (Hull size: {len(hull)})")
+    #     ax.set_xlabel('X-axis')
+    #     ax.set_ylabel('Y-axis')
+    #     ax.legend()
+    #     ax.grid()
+    # plt.tight_layout()
+    # plt.show()
 
 if __name__ == "__main__":
     main()
