@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from geometry import Point
 from typing import List, Dict, Any, Tuple
 
+import time
+
 from matplotlib.widgets import Button
 
 COLORS = {
@@ -160,7 +162,7 @@ class Visualizer:
         self.algorithm = algorithm
         self.idx = 0 # index of the current step being visualized
 
-        global input_points
+        # global input_points
         input_points.clear()
         input_points.extend(points)
 
@@ -190,6 +192,7 @@ class Visualizer:
         ax_next = self.fig.add_axes([0.34, 0.01, 0.10, 0.05])
         ax_start = self.fig.add_axes([0.06, 0.01, 0.10, 0.05])
         ax_end  = self.fig.add_axes([0.48, 0.01, 0.10, 0.05])
+        ax_save = self.fig.add_axes([0.62, 0.01, 0.10, 0.05])
         ax_auto  = self.fig.add_axes([0.82, 0.01, 0.10, 0.05])
 
         # btn_style = dict(color="#16213e", hovercolor="#0f3460")
@@ -198,6 +201,7 @@ class Visualizer:
         self.btn_next  = Button(ax_next,  "Next  ▶", **btn_style)
         self.btn_first = Button(ax_start, "⏮ Start",  **btn_style)
         self.btn_last  = Button(ax_end,  "end ⏭",  **btn_style)
+        self.btn_save = Button(ax_save, "Save", **btn_style)
         self.btn_auto  = Button(ax_auto,  "Play/Pause", **btn_style)
         
         for btn in (self.btn_prev, self.btn_next, self.btn_first,
@@ -209,12 +213,24 @@ class Visualizer:
         self.btn_next.on_clicked(lambda _: self._go(+1))
         self.btn_first.on_clicked(lambda _: self._jump(0))
         self.btn_last.on_clicked(lambda _: self._jump(len(self.steps) - 1))
+        self.btn_save.on_clicked(lambda _: self._save_point_set())
         self.btn_auto.on_clicked(lambda _: self._toggle_auto())
 
         self.fig.canvas.mpl_connect("key_press_event", self._on_key)
         self._render()
 
     # button handlers
+    # debugging helper: saves the current point set to a .txt file to evaluate at a later time
+    # format is just one point per line, as "x y"
+    # file is saved in the same directory as the script, with the name "saved_points_timestamp.txt"
+    def _save_point_set(self):
+        timestamp = int(time.time())
+        filename = f"saved_points_{timestamp}.txt"
+        with open(filename, "w") as f:
+            for p in input_points:
+                f.write(f"{p[0]} {p[1]}\n")
+        print(f"Saved current point set to {filename}")
+
     def _go(self, delta):
         self.idx = max(0, min(len(self.steps) - 1, self.idx + delta))
         self._render()
@@ -232,14 +248,15 @@ class Visualizer:
             self._go(+1)
         elif event.key in ("left", "p"):
             self._go(-1)
-        elif event.key == "home":
+        elif event.key == "b":
             self._jump(0)
-        elif event.key == "end":
+        elif event.key == "e":
             self._jump(len(self.steps) - 1)
         elif event.key == " ":
             self._toggle_auto()
 
     def _render(self):
+        print(f"Rendering a step for algo {self.algorithm} (step {self.idx + 1} / {len(self.steps)})")
         step = self.steps[self.idx]
         self.ax.cla() # clear the axes before redrawing
         render_fn = RENDERERS[self.algorithm]

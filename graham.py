@@ -1,8 +1,12 @@
 from geometry import Point, orientation_test, dup_x_coord_set
 from typing import List, Dict, Any, Tuple
 
-steps: List[Dict[str, Any]] = []
+steps: List[Dict[str, Any]]
 record_steps = False
+
+def setup_steps():
+    global steps
+    steps = []
 
 def record_pop(_stack: List[Point], popped: Point, p: Point):
     if not record_steps:
@@ -39,13 +43,14 @@ def record_finished_chain(_stack: List[Point], chain_type: str):
     return
 
 
-# def graham_scan(points: List[Point], _record_steps: bool = False) -> List[Point]:
 def graham_scan(points: List[Point], _record_steps: bool = False) -> Tuple[List[Point], List[Dict[str, Any]]]:
     # if dup_x_coord_set(points):
         # raise ValueError("Input points must have unique x-coordinates.")
 
     global record_steps
     record_steps = _record_steps
+
+    setup_steps()
 
     if len(points) < 3:
         return points, steps
