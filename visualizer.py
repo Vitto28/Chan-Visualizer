@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from geometry import Point
 from typing import List, Dict, Any, Tuple
 
+from matplotlib.widgets import Button
+
 COLORS = {
     "background": "#ffffff",
     "point": "#1f77b4",
@@ -158,18 +160,84 @@ class Visualizer:
         self.algorithm = algorithm
         self.idx = 0 # index of the current step being visualized
 
-        # figure layout: main area + description bar
-        # TODO: add nav buttons to step through the visualization
-        self.fig = plt.figure(figsize=(10, 8), facecolor=COLORS["background"])
+        global input_points
+        input_points.clear()
+        input_points.extend(points)
 
-        # main area
-        self.ax = self.fig.add_axes([0.05, 0.05, 0.9, 0.9])
-        # description bar
-        self.desc_ax = self.fig.add_axes([0.05, 0.95, 0.9, 0.05])
+        # Figure layout: main plot + description bar + nav buttons
+        self.fig = plt.figure(figsize=(10, 7.5), facecolor=COLORS["background"])
+        self.fig.suptitle("", color=COLORS["text"], fontsize=11, y=0.97)
+
+        self.ax = self.fig.add_axes([0.06, 0.18, 0.88, 0.74])
+
+        # Description text
+        self.desc_ax = self.fig.add_axes([0.06, 0.10, 0.88, 0.06])
+        self.desc_ax.set_facecolor("#0d0d1a")
         self.desc_ax.axis("off")
-        self.desc_text = self.desc_ax.text(0.5, 0.5, "", ha="center", va="center", fontsize=10, color=COLORS["text"])
-        # step counter
-        self.counter_text = self.desc_ax.text(0.5, 0.05, "", ha="center", color=COLORS["text"], fontsize=8)
+        self.desc_text = self.desc_ax.text(
+            0.01, 0.5, "", transform=self.desc_ax.transAxes,
+            color=COLORS["text"], fontsize=8.5, va="center",
+            fontfamily="monospace",
+        )
+
+        # Step counter
+        self.counter_text = self.fig.text(
+            0.5, 0.05, "", ha="center", color=COLORS["text"], fontsize=8,
+        )
+
+        # nav buttons (prev, next, start, end, play/pause)
+        ax_prev = self.fig.add_axes([0.20, 0.01, 0.10, 0.05])
+        ax_next = self.fig.add_axes([0.34, 0.01, 0.10, 0.05])
+        ax_start = self.fig.add_axes([0.06, 0.01, 0.10, 0.05])
+        ax_end  = self.fig.add_axes([0.48, 0.01, 0.10, 0.05])
+        ax_auto  = self.fig.add_axes([0.82, 0.01, 0.10, 0.05])
+
+        # btn_style = dict(color="#16213e", hovercolor="#0f3460")
+        btn_style = dict(color=COLORS["background"])
+        self.btn_prev  = Button(ax_prev,  "◀  Prev",  **btn_style)
+        self.btn_next  = Button(ax_next,  "Next  ▶", **btn_style)
+        self.btn_first = Button(ax_start, "⏮ Start",  **btn_style)
+        self.btn_last  = Button(ax_end,  "end ⏭",  **btn_style)
+        self.btn_auto  = Button(ax_auto,  "Play/Pause", **btn_style)
+        
+        for btn in (self.btn_prev, self.btn_next, self.btn_first,
+            self.btn_last, self.btn_auto):
+            btn.label.set_color(COLORS["text"])
+            btn.label.set_fontsize(8)
+
+        self.btn_prev.on_clicked(lambda _: self._go(-1))
+        self.btn_next.on_clicked(lambda _: self._go(+1))
+        self.btn_first.on_clicked(lambda _: self._jump(0))
+        self.btn_last.on_clicked(lambda _: self._jump(len(self.steps) - 1))
+        self.btn_auto.on_clicked(lambda _: self._toggle_auto())
+
+        self.fig.canvas.mpl_connect("key_press_event", self._on_key)
+        self._render()
+
+    # button handlers
+    def _go(self, delta):
+        self.idx = max(0, min(len(self.steps) - 1, self.idx + delta))
+        self._render()
+
+    def _jump(self, idx):
+        self.idx = idx
+        self._render()
+
+    def _toggle_auto(self):
+        #TODO: implement play/pause functionality
+        pass
+
+    def _on_key(self, event):
+        if event.key in ("right", "n"):
+            self._go(+1)
+        elif event.key in ("left", "p"):
+            self._go(-1)
+        elif event.key == "home":
+            self._jump(0)
+        elif event.key == "end":
+            self._jump(len(self.steps) - 1)
+        elif event.key == " ":
+            self._toggle_auto()
 
     def _render(self):
         step = self.steps[self.idx]
@@ -180,6 +248,9 @@ class Visualizer:
         self.desc_text.set_text(step["description"])
         self.counter_text.set_text(f"Step {self.idx + 1} of {len(self.steps)}")
         self.fig.canvas.draw_idle()
+
+    def show(self):
+        plt.show()
 
 def show_steps_auto(steps: List[Dict[str, Any]], points: List[Point], algorithm: str, delay: float = 0.5, title: str = ""):
     fig, ax = plt.subplots(figsize=(8, 6), facecolor=COLORS["background"])
@@ -217,4 +288,6 @@ def show_steps_auto(steps: List[Dict[str, Any]], points: List[Point], algorithm:
 # visualize function
 def visualize(points: List[Point], steps: List[Dict[str, Any]], algorithm: str, title: str = ""):
     # TODO: add option for manual step-through with buttons
-    show_steps_auto(steps, points, algorithm, title=title, delay=0.1)
+    # show_steps_auto(steps, points, algorithm, title=title, delay=0.1)
+    vis = Visualizer(points, steps, algorithm)
+    vis.show()

@@ -10,7 +10,7 @@ from graham import graham_scan
 from jarvis import jarvis_march
 from chan import chans_algo
 
-from visualizer import visualize
+from visualizer import visualize, RENDERERS
 
 def main():
     n = 10
@@ -33,18 +33,18 @@ def main():
 
     # run the three algorithms on the same set of points and verify that they all produce the same hull (up to cyclic shifts and reversals)
     # take only the hull points, ignore the recorded steps for now
-    # algos = {
-    #     "Graham's Scan": graham_scan(pts[:]),
-    #     "Jarvis March": jarvis_march(pts[:]),
-    #     "Chan's Algorithm": chans_algo(pts[:])
-    # }
+    algos = {
+        "graham_scan": graham_scan(pts[:], _record_steps=True),
+        "jarvis_march": jarvis_march(pts[:], _record_steps=True),
+        "chan_algorithm": chans_algo(pts[:], _record_steps=True)
+    }
 
-    # gs_hull, gs_steps = graham_scan(pts[:], _record_steps=True)
-    jm_hull, jm_steps = jarvis_march(pts[:], _record_steps=True)
-    # print len of steps
-    # print(f"Graham's Scan produced a hull with {len(gs_hull)} points and recorded {len(gs_steps)} steps.")
-    # visualize(pts, gs_steps, "graham_scan")
-    visualize(pts, jm_steps, "jarvis_march")
+    algo_name = "graham_scan"
+    # algo_name = "jarvis_march"
+    # algo_name = "chan_algorithm"
+    hull, steps = algos[algo_name]
+    # assert hull is non-empty
+    visualize(pts, steps, algo_name)
 
     # plot the final hull as a sanity check
     # hull_xs, hull_ys = zip(*gs_hull)

@@ -14,7 +14,10 @@ def graham_aux(points: List[Point]) -> List[Point]:
     return graham_scan(points)[0]
 
 
-def chans_algo(points: List[Point]) -> Tuple[List[Point], List[Dict[str, Any]]]:
+def chans_algo(points: List[Point], _record_steps: bool = False) -> Tuple[List[Point], List[Dict[str, Any]]]:
+
+    global record_steps
+    record_steps = _record_steps
 
     if len(points) < 3:
         return points, steps
