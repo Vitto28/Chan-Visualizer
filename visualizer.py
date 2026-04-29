@@ -147,11 +147,22 @@ def render_jarvis_step(ax, step: Dict[str, Any]):
     else:
         raise ValueError(f"Unknown phase {phase} in step: {step}")
 
+
+def render_chan_step(ax, step: Dict[str, Any]):
+    phase = step["phase"]
+    stack = step["stack"]
+
+    if phase == "finished":
+        draw_hull(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
+    else:
+        raise ValueError(f"Unknown phase {phase} in step: {step}")
+
+
 # Dispatch
 RENDERERS = {
     "graham_scan": render_graham_step,
     "jarvis_march": render_jarvis_step,
-    "chan_algorithm": None # TODO
+    "chan_algorithm": render_chan_step
 }
 
 # Visualizer

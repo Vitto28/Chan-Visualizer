@@ -33,19 +33,19 @@ def main():
 
     # debugging
     # load point set from a randomly chosen .txt file in the same directory as the script, with the format "x y" per line
-    # import os
-    # txt_files = [f for f in os.listdir() if f.endswith(".txt")]
-    # if txt_files:
-    #     filename = np.random.choice(txt_files)
-    #     print(f"Loading points from {filename}...")
-    #     with open(filename, "r") as f:
-    #         pts = []
-    #         for line in f:
-    #             x_str, y_str = line.strip().split()
-    #             pts.append((int(x_str), int(y_str)))
-    #     print(f"Loaded {len(pts)} points from {filename}.")
-    # else:
-    #     print("No .txt files found to load points from.")
+    import os
+    txt_files = [f for f in os.listdir() if f.endswith(".txt")]
+    if txt_files:
+        filename = np.random.choice(txt_files)
+        print(f"Loading points from {filename}...")
+        with open(filename, "r") as f:
+            pts = []
+            for line in f:
+                x_str, y_str = line.strip().split()
+                pts.append((int(x_str), int(y_str)))
+        print(f"Loaded {len(pts)} points from {filename}.")
+    else:
+        print("No .txt files found to load points from.")
 
     # run the three algorithms on the same set of points and verify that they all produce the same hull (up to cyclic shifts and reversals)
     # take only the hull points, ignore the recorded steps for now
@@ -55,11 +55,10 @@ def main():
         "chan_algorithm": chans_algo(pts[:], _record_steps=True)
     }
 
-    algo_name = "graham_scan"
+    # algo_name = "graham_scan"
     # algo_name = "jarvis_march"
-    # algo_name = "chan_algorithm"
+    algo_name = "chan_algorithm"
     hull, steps = algos[algo_name]
-    # assert hull is non-empty
     visualize(pts, steps, algo_name)
 
     # plot the final hull as a sanity check
@@ -92,6 +91,7 @@ def main():
     # for ax, (algo_name, algo_output) in zip(axs, algos.items()):
     #     print(f"Visualizing {algo_name} output...")
     #     hull, _ = algo_output
+    #     xs, ys = zip(*pts)
     #     # print(f"{algo_name} produced a hull with {len(hull)} points.")
     #     ax.scatter(xs, ys, color='blue', label='Random Points')
     #     hull_xs, hull_ys = zip(*hull)

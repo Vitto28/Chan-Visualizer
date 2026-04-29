@@ -31,6 +31,15 @@ def chans_algo(points: List[Point], _record_steps: bool = False) -> Tuple[List[P
         h_star = min(h_star**2, n) # TODO: try other growth rates for h_star
         # print(f"Trying with h* = {h_star}...")
         success, hull = conditional_hull(pts, h_star)
+
+    # add single step that just records the final hull
+    # TODO: implement proper step recording functions
+    steps.append({
+        "phase": "finished",
+        "stack": hull[:],
+        "description": f"Finished computing convex hull with {len(hull)} points using Chan's algorithm with h* = {h_star}"
+    })
+
     return hull, steps
 
 
