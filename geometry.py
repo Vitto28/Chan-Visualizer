@@ -4,28 +4,29 @@ from typing import Tuple, List
 Point = Tuple[int, int]
 
 def angle(p: Point, q: Point, r: Point) -> float:
-    """Returns the angle formed by the ordered triplet (p, q, r) in radians."""
+    """Returns the signed angle formed by the ordered triplet (p, q, r) in radians.
+
+    Positive values indicate a counter-clockwise turn from q->p to q->r,
+    and negative values indicate a clockwise turn.
+    """
     x1, y1 = p
     x2, y2 = q
     x3, y3 = r
 
-    # vectors pq and qr
-    v1x, v1y = x2 - x1, y2 - y1
+    # vectors q->p and q->r
+    v1x, v1y = x1 - x2, y1 - y2
     v2x, v2y = x3 - x2, y3 - y2
 
-    # calculate the angle using the dot product formula
+    # calculate the signed angle using atan2 of cross and dot products
     dot_product = v1x * v2x + v1y * v2y
+    cross_product = v1x * v2y - v1y * v2x
     mag_v1 = math.sqrt(v1x**2 + v1y**2)
     mag_v2 = math.sqrt(v2x**2 + v2y**2)
 
     if mag_v1 == 0 or mag_v2 == 0:
         raise ValueError("Angle is undefined for zero-length vectors.")
 
-    cos_theta = dot_product / (mag_v1 * mag_v2)
-    # clamp cos_theta to the range [-1, 1] to avoid numerical issues with acos
-    cos_theta = max(-1.0, min(1.0, cos_theta))
-    
-    return math.acos(cos_theta)
+    return math.atan2(cross_product, dot_product)
 
 def orientation_test(p: Point, q: Point, r: Point) -> int:
     """Returns the orientation of the ordered triplet (p, q, r).
@@ -72,6 +73,37 @@ def left_tangent_point(hull: List[Point], q: Point) -> int:
             # p_next lies on the wrong side
             low = mid + 1
     return low % n
+
+def right_tangent_point(hull: List[Point], q: Point) -> int:
+    """Finds the index of the right tangent point from the given point q to the convex hull by using binary search."""
+    n = len(hull)
+    if n == 0:
+        return -1
+    if n == 1:
+        return 0
+    low, high = 0, n - 1
+    while low <= high:
+        mid = (low + high) // 2
+        next_index = (mid + 1) % n
+        prev_index = (mid - 1 + n) % n
+
+        p = hull[mid]
+        p_next = hull[next_index]
+        p_prev = hull[prev_index]
+
+        if orientation_test(q, p, p_next) <= 0 and orientation_test(q, p, p_prev) <= 0:
+            return mid
+        elif orientation_test(q, p, p_prev) > 0:
+            # p_prev lies on the wrong side
+            high = mid - 1
+        else:
+            # p_next lies on the wrong side
+            low = mid + 1
+    return low % n
+
+def get_tangent_points(hull: List[Point], q: Point) -> Tuple[int, int]:
+    """Returns the indices of the left and right tangent points from q to the hull."""
+    return left_tangent_point(hull, q), right_tangent_point(hull, q)
 
 # === Degeneracy checks ===
 def are_collinear(p: Point, q: Point, r: Point) -> bool:
