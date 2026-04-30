@@ -18,15 +18,17 @@ algos = {
 
 # === Point generation strategies ===
 
-def generate_random_points(n=20, x_max=400, y_max=300, seed=None):
-    x_rng = np.random.permutation(x_max)[:n]
-    y_rng = np.random.permutation(y_max)[:n]
+def rnd_pts(n=20, max=100, seed=None):
+    return np.random.permutation(max)[:n]
 
-    pts = list(zip(x_rng, y_rng))
-    # pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
-    # while dup_x_coord_set(pts):
-    # while not general_position(pts):
-    #     pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
+def generate_random_points(n=20, x_max=400, y_max=300, seed=None):
+    while True:
+        x_rng = rnd_pts(n, x_max, seed)
+        y_rng = rnd_pts(n, y_max, seed)
+        pts = list(zip(x_rng, y_rng))
+        # pts = [(rng.randint(0, x_max), rng.randint(0, y_max)) for _ in range(n)]
+        if general_position(pts):
+            break
     return pts
 
 # === Complex configurations of points ===
