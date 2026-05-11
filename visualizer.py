@@ -20,6 +20,12 @@ COLORS = {
     "grid": "#cccccc"
 }
 
+HULL_COLORS = [
+    "#ff6b6b", "#ffd166", "#06d6a0", "#118ab2",
+    "#8338ec", "#ff9f1c", "#e63946", "#4cc9f0",
+    "#f72585", "#b5e48c",
+]
+
 input_points: List[Point] = []
 
 # === Drawing utilities ===
@@ -54,11 +60,19 @@ def draw_points(ax, pts: List[Point], color=None, s=35, zorder=3, alpha=1.0, mar
         spine.set_color(COLORS["grid"])
     ax.grid(color=COLORS["grid"], lw=0.5, alpha=0.5)
     ax.scatter(xs, ys, color=color, s=s, zorder=zorder, alpha=alpha, marker=marker)
+
+    # annotate the points with their coordinates for debugging
+    # TODO: move this into its own separate function?
+    for p in pts:
+        ax.annotate(f"({p[0]}, {p[1]})", (p[0], p[1]), textcoords="offset points", xytext=(5,5), ha="left", fontsize=6, color=COLORS["text"])   
+
+
     
 def draw_hull(ax, hull: List[Point], color=None, lw=2, zorder=4):
     if len(hull) == 0:
         return
     hull_xs, hull_ys = zip(*hull)
+    ax.fill(hull_xs, hull_ys, color=color, alpha=0.5, zorder=zorder - 1)
     ax.plot(hull_xs + (hull_xs[0],), hull_ys + (hull_ys[0],), color=color, lw=lw, zorder=zorder)
 
 def draw_line(ax, p1: Point, p2: Point, color=None, lw=1, zorder=4):
@@ -138,7 +152,7 @@ def render_jarvis_step(ax, step: Dict[str, Any]):
         draw_line(ax, pivot_pred, pivot, color=COLORS["hull_edge"], lw=2, zorder=4)
         draw_line(ax, pivot, new_best, color=COLORS["hull_edge"], lw=2, zorder=6)
     elif phase == "current_hull":
-        # draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
+        draw_points(ax, stack, color=COLORS["hull_point"], s=50, zorder=4)
         draw_points(ax, [stack[-1]], color=COLORS["current_point"], s=100, zorder=5)
         draw_polygonal_curve(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
     elif phase == "finished":
@@ -150,12 +164,87 @@ def render_jarvis_step(ax, step: Dict[str, Any]):
 
 def render_chan_step(ax, step: Dict[str, Any]):
     phase = step["phase"]
-    stack = step["stack"]
 
     if phase == "finished":
-        draw_hull(ax, stack, color=COLORS["hull_edge"], lw=2, zorder=5)
+        hull = step["hull"]
+        draw_hull(ax, hull, color=COLORS["hull_edge"], lw=2, zorder=5)
+    elif phase == "failure":
+        h_prev = step["h_prev"]
+        h_new = step["h_new"]
+        desc = f"Failed with h* = {h_prev}, trying again with h* = {h_new}..."
+        ax.set_xlabel(desc, color=COLORS["text"], fontsize=8)
+    elif phase in ("mini_hulls", "pivots", "candidate_test", "new_best", "current_hull", "tangent_points"):
+        mini_hulls = step["mini_hulls"]
+        for mh in mini_hulls:
+            # each hull is drawn with a different color from the HULL_COLORS list, cycling through if there are more mini hulls than colors
+            # draw_hull(ax, mh, color=COLORS["potential_hull_edge"], lw=1, zorder=4)
+            color = HULL_COLORS[mini_hulls.index(mh) % len(HULL_COLORS)]
+            draw_hull(ax, mh, color=color, lw=1, zorder=4)
+        if phase == "pivots":
+            print("HERE")
+            pivot = step["pivot"]
+            pivot_pred = step["pivot_pred"]
+            draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=5)
+            draw_points(ax, [pivot_pred], color=COLORS["potential_hull_vertex"], s=100, zorder=5)
+        elif phase == "candidate_test":
+            pivot = step["pivot"]
+            pivot_pred = step["pivot_pred"]
+            candidate = step["candidate"]
+            current_best = step.get("current_best", None)
+
+            draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=5)
+            draw_points(ax, [candidate], color=COLORS["potential_hull_vertex"], s=100, zorder=5)
+            if current_best is not None:
+                draw_points(ax, [current_best], color=COLORS["hull_point"], s=100, zorder=6)
+            draw_line(ax, pivot_pred, pivot, color=COLORS["hull_edge"], lw=2, zorder=4)
+            draw_line(ax, pivot, candidate, color=COLORS["potential_hull_edge"], lw=2, zorder=5)
+            if current_best is not None:
+                draw_line(ax, pivot, current_best, color=COLORS["hull_edge"], lw=2, zorder=6)
+            # draw the current hull as well
+            hull = step["hull"]
+            draw_polygonal_curve(ax, hull, color=COLORS["hull_edge"], lw=2, zorder=4)
+        elif phase == "new_best":
+            pivot = step["pivot"]
+            pivot_pred = step["pivot_pred"]
+            new_best = step["new_best"]
+
+            draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=5)
+            draw_points(ax, [new_best], color=COLORS["hull_point"], s=100, zorder=6)
+            draw_line(ax, pivot_pred, pivot, color=COLORS["hull_edge"], lw=2, zorder=4)
+            draw_line(ax, pivot, new_best, color=COLORS["hull_edge"], lw=2, zorder=6)
+
+            # draw the current hull as well
+            hull = step["hull"]
+            draw_polygonal_curve(ax, hull, color=COLORS["hull_edge"], lw=2, zorder=4)
+        elif phase == "current_hull":
+            hull = step["hull"]
+            # draw_points(ax, [hull[-1]], color=COLORS["current_point"], s=100, zorder=5)
+            draw_polygonal_curve(ax, hull, color=COLORS["hull_edge"], lw=2, zorder=5)
+        elif phase == "tangent_points":
+            # highlights the tangent points found in the current iteration by drawing them as large points
+            tangent_points = step["tangent_points"]
+            pivot = step["pivot"]
+            # draw each tangent point and its connecting line using the color of the mini-hull it belongs to
+            for tp in tangent_points:
+                # find which mini-hull this tangent point belongs to
+                try:
+                    mh_index = next(i for i, mh in enumerate(mini_hulls) if tp in mh)
+                    color = HULL_COLORS[mh_index % len(HULL_COLORS)]
+                except StopIteration:
+                    color = COLORS["potential_hull_edge"]
+
+                draw_points(ax, [tp], color=color, s=100, zorder=5)
+                draw_line(ax, pivot, tp, color=color, lw=2, zorder=5)
+
+            # highlight the current pivot as well
+            draw_points(ax, [pivot], color=COLORS["current_point"], s=100, zorder=6)
+
+            # draw the current hull as well
+            hull = step["hull"]
+            draw_polygonal_curve(ax, hull, color=COLORS["hull_edge"], lw=2, zorder=4)
     else:
         raise ValueError(f"Unknown phase {phase} in step: {step}")
+
 
 
 # Dispatch
