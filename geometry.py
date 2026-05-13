@@ -1,32 +1,41 @@
 import math
+import numpy as np
 from typing import Tuple, List
+
+import itertools
 
 Point = Tuple[int, int]
 
 def angle(p: Point, q: Point, r: Point) -> float:
-    """Returns the signed angle formed by the ordered triplet (p, q, r) in radians.
-
-    Positive values indicate a counter-clockwise turn from q->p to q->r,
-    and negative values indicate a clockwise turn.
+    """Returns the signed angle formed by the ordered triplet (p, q, r).
+    Positive values indicate a counter-clockwise turn, and negative values indicate a clockwise turn.
     """
+    # Vectors from q to p and q to r
+    px, py = p
+    qx, qy = q
+    rx, ry = r
+    v1 = (qx - px, qy - py)
+    v2 = (rx - qx, ry - qy)
+
+    # Cross product (z-component) gives the signed sine of the angle
+    cross = v1[0] * v2[1] - v1[1] * v2[0]
+    # Dot product gives the cosine component
+    dot = v1[0] * v2[0] + v1[1] * v2[1]
+
+    return math.atan2(cross, dot)
+    
+def turn(p: Point, q: Point, r: Point) -> float:
     x1, y1 = p
     x2, y2 = q
     x3, y3 = r
-
-    # vectors q->p and q->r
-    v1x, v1y = x1 - x2, y1 - y2
-    v2x, v2y = x3 - x2, y3 - y2
-
-    # calculate the signed angle using atan2 of cross and dot products
-    dot_product = v1x * v2x + v1y * v2y
-    cross_product = v1x * v2y - v1y * v2x
-    mag_v1 = math.sqrt(v1x**2 + v1y**2)
-    mag_v2 = math.sqrt(v2x**2 + v2y**2)
-
-    if mag_v1 == 0 or mag_v2 == 0:
-        raise ValueError("Angle is undefined for zero-length vectors.")
-
-    return math.atan2(cross_product, dot_product)
+    # matrix is 3 by 3, first column is all 1s
+    mat = np.array([
+        [1, x1, y1],
+        [1, x2, y2],
+        [1, x3, y3],
+    ])
+    det = np.linalg.det(mat)
+    return det
 
 def orientation_test(p: Point, q: Point, r: Point) -> int:
     """Returns the orientation of the ordered triplet (p, q, r).
@@ -35,10 +44,18 @@ def orientation_test(p: Point, q: Point, r: Point) -> int:
     -1 -> if clockwise (right turn)
     """
 
-    x1, y1 = p
-    x2, y2 = q
-    x3, y3 = r
-    det = (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2)
+    # x1, y1 = p
+    # x2, y2 = q
+    # x3, y3 = r
+    # # matrix is 3 by 3, first column is all 1s
+    # mat = np.array([
+    #     [1, x1, y1],
+    #     [1, x2, y2],
+    #     [1, x3, y3],
+    # ])
+    # det = np.linalg.det(mat)
+    # # det = angle(p, q, r)  # we can use the angle function since it gives us the same information about the turn direction, and also gives us the angle magnitude which we can use for tie-breaking in Chan's algorithm
+    det = turn(p, q, r)
     if det > 0:
         return 1  # Counter-clockwise
     elif det < 0:
@@ -47,63 +64,37 @@ def orientation_test(p: Point, q: Point, r: Point) -> int:
         return 0  # Collinear
     
 
-def left_tangent_point(hull: List[Point], q: Point) -> int:
-    """Finds the index of the left tangent point from the given point q to the convex hull by using binary search."""
+def left_tangent_point(hull: List[Point], q: Point) -> Point:
+    """Finds the left tangent point from the given point q to the convex hull by using binary search."""
+    print(f" === Finding left tangent point from {q} to hull with points: {hull} === ")
+    idx = 0; # index of the left tangent point
     n = len(hull)
-    if n == 0:
-        return -1
-    if n == 1:
-        return 0
+    assert n > 0, "Hull must have at least one point to find a tangent"
     low, high = 0, n - 1
     while low <= high:
-        mid = (low + high) // 2
+        mid = low + (high - low) // 2
         next_index = (mid + 1) % n
         prev_index = (mid - 1 + n) % n
 
         p = hull[mid]
         p_next = hull[next_index]
         p_prev = hull[prev_index]
+            
+        # print these three
+        print(f"Testing hull point p: {p} with prev: {p_prev} and next: {p_next} against query point q: {q}")
 
-        if orientation_test(q, p, p_next) >= 0 and orientation_test(q, p, p_prev) >= 0:
-            return mid
+        if orientation_test(q, p, p_next) > 0 and orientation_test(q, p, p_prev) > 0:
+            idx = mid
+            break
         elif orientation_test(q, p, p_prev) < 0:
-            # p_prev lies on the wrong side
+            # p_prev lies on the wrong side, choose the left interval
             high = mid - 1
         else:
-            # p_next lies on the wrong side
+            # p_next lies on the wrong side, choose the right interval
             low = mid + 1
-    return low % n
+    idx = low + (high - low) // 2
+    return hull[idx]
 
-def right_tangent_point(hull: List[Point], q: Point) -> int:
-    """Finds the index of the right tangent point from the given point q to the convex hull by using binary search."""
-    n = len(hull)
-    if n == 0:
-        return -1
-    if n == 1:
-        return 0
-    low, high = 0, n - 1
-    while low <= high:
-        mid = (low + high) // 2
-        next_index = (mid + 1) % n
-        prev_index = (mid - 1 + n) % n
-
-        p = hull[mid]
-        p_next = hull[next_index]
-        p_prev = hull[prev_index]
-
-        if orientation_test(q, p, p_next) <= 0 and orientation_test(q, p, p_prev) <= 0:
-            return mid
-        elif orientation_test(q, p, p_prev) > 0:
-            # p_prev lies on the wrong side
-            high = mid - 1
-        else:
-            # p_next lies on the wrong side
-            low = mid + 1
-    return low % n
-
-def get_tangent_points(hull: List[Point], q: Point) -> Tuple[int, int]:
-    """Returns the indices of the left and right tangent points from q to the hull."""
-    return left_tangent_point(hull, q), right_tangent_point(hull, q)
 
 # === Degeneracy checks ===
 def are_collinear(p: Point, q: Point, r: Point) -> bool:
@@ -139,13 +130,11 @@ def dup_y_coord_set(points: List[Point]) -> bool:
 def general_position(points: List[Point], check_y=False) -> bool:
     """Check if the points are in general position (no three collinear, no duplicate x-coords, and optionally no duplicate y-coords)."""
     n = len(points)
-    for i in range(n):
-        for j in range(i + 1, n):
-            if dup_x_coord(points[i], points[j]):
-                return False
-            if check_y and dup_y_coord(points[i], points[j]):
-                return False
-            for k in range(j + 1, n):
-                if are_collinear(points[i], points[j], points[k]):
-                    return False
+    # the gen random pts function already ensures that there are no duplicate points, so we only need to check for collinearity 
+    groups = itertools.combinations(points, 3)
+    for p, q, r in groups:
+        print(f"Checking points {p}, {q}, {r} for collinearity...")
+        if are_collinear(p, q, r):
+            print(f"Points {p}, {q}, {r} are collinear.")
+            return False
     return True 
